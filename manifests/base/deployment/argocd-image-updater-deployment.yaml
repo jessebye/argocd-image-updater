@@ -20,7 +20,7 @@ spec:
       containers:
       - args:
         - run
-        image: quay.io/argoprojlabs/argocd-image-updater:latest
+        image: docker.io/riskalyze/argocd-image-updater:latest
         imagePullPolicy: Always
         env:
         - name: APPLICATIONS_API
