@@ -28,7 +28,7 @@ jobs:
           MULTIARCH=no
           PUSH=no
           if [[ "${{ github.event_name }}" == "push" ]]; then
-            # MULTIARCH=yes
+            MULTIARCH=yes
             PUSH=yes
           elif [[ "${{ contains(github.event.pull_request.labels.*.name, 'test-arm-image') }}" == "true" ]]; then
             MULTIARCH=yes
@@ -39,7 +39,7 @@ jobs:
           if [[ "${MULTIARCH}" = "yes" ]]; then
             IMAGE_PUSH=${PUSH} make multiarch-image
           else
-            make image image-push
+            make image
           fi
         working-directory: argocd-image-updater
         env:
