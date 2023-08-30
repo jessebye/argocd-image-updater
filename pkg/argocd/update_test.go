@@ -23,7 +23,7 @@ import (
 
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	argogit "github.com/argoproj/argo-cd/v2/util/git"
-	"github.com/distribution/distribution/v3/manifest/schema1"
+	"github.com/distribution/distribution/v3/manifest/schema1" //nolint:staticcheck
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -687,12 +687,12 @@ func Test_UpdateApplication(t *testing.T) {
 	})
 
 	t.Run("Test skip because of match-tag pattern doesn't match", func(t *testing.T) {
-		meta := make([]*schema1.SignedManifest, 4)
+		meta := make([]*schema1.SignedManifest, 4) //nolint:staticcheck
 		for i := 0; i < 4; i++ {
 			ts := fmt.Sprintf("2006-01-02T15:%.02d:05.999999999Z", i)
-			meta[i] = &schema1.SignedManifest{
-				Manifest: schema1.Manifest{
-					History: []schema1.History{
+			meta[i] = &schema1.SignedManifest{ //nolint:staticcheck
+				Manifest: schema1.Manifest{ //nolint:staticcheck
+					History: []schema1.History{ //nolint:staticcheck
 						{
 							V1Compatibility: `{"created":"` + ts + `"}`,
 						},
@@ -763,12 +763,12 @@ func Test_UpdateApplication(t *testing.T) {
 	})
 
 	t.Run("Test skip because of ignored", func(t *testing.T) {
-		meta := make([]*schema1.SignedManifest, 4)
+		meta := make([]*schema1.SignedManifest, 4) //nolint:staticcheck
 		for i := 0; i < 4; i++ {
 			ts := fmt.Sprintf("2006-01-02T15:%.02d:05.999999999Z", i)
-			meta[i] = &schema1.SignedManifest{
-				Manifest: schema1.Manifest{
-					History: []schema1.History{
+			meta[i] = &schema1.SignedManifest{ //nolint:staticcheck
+				Manifest: schema1.Manifest{ //nolint:staticcheck
+					History: []schema1.History{ //nolint:staticcheck
 						{
 							V1Compatibility: `{"created":"` + ts + `"}`,
 						},
@@ -1717,6 +1717,48 @@ func Test_GetGitCreds(t *testing.T) {
 		creds, err := wbc.GetCreds(&app)
 		require.Error(t, err)
 		require.Nil(t, creds)
+	})
+
+	t.Run("SSH creds from Argo CD settings with Helm Chart repoURL", func(t *testing.T) {
+		argoClient := argomock.ArgoCD{}
+		argoClient.On("UpdateSpec", mock.Anything, mock.Anything).Return(nil, nil)
+		secret := fixture.NewSecret("argocd-image-updater", "git-creds", map[string][]byte{
+			"sshPrivateKey": []byte("foo"),
+		})
+		kubeClient := kube.KubernetesClient{
+			Clientset: fake.NewFakeClientsetWithResources(secret),
+		}
+
+		app := v1alpha1.Application{
+			ObjectMeta: v1.ObjectMeta{
+				Name: "testapp",
+				Annotations: map[string]string{
+					"argocd-image-updater.argoproj.io/image-list":        "nginx",
+					"argocd-image-updater.argoproj.io/write-back-method": "git:secret:argocd-image-updater/git-creds",
+					"argocd-image-updater.argoproj.io/git-repository":    "git@github.com:example/example.git",
+				},
+			},
+			Spec: v1alpha1.ApplicationSpec{
+				Source: v1alpha1.ApplicationSource{
+					RepoURL:        "https://example-helm-repo.com/example",
+					TargetRevision: "main",
+				},
+			},
+			Status: v1alpha1.ApplicationStatus{
+				SourceType: v1alpha1.ApplicationSourceTypeKustomize,
+			},
+		}
+
+		wbc, err := getWriteBackConfig(&app, &kubeClient, &argoClient)
+		require.NoError(t, err)
+		require.Equal(t, wbc.GitRepo, "git@github.com:example/example.git")
+
+		creds, err := wbc.GetCreds(&app)
+		require.NoError(t, err)
+		require.NotNil(t, creds)
+		// Must have SSH creds
+		_, ok := creds.(git.SSHCreds)
+		require.True(t, ok)
 	})
 }
 
