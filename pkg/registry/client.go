@@ -212,6 +212,7 @@ func (client *registryClient) TagMetadata(manifest distribution.Manifest, opts *
 	//
 	// Also ManifestLists (e.g. on multi-arch images) are supported.
 	//
+	logCtx.Debugf("manifest.(type) = %T", manifest)
 	switch deserialized := manifest.(type) {
 
 	case *schema1.SignedManifest: //nolint:staticcheck
