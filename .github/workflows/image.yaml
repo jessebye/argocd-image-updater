@@ -28,7 +28,7 @@ jobs:
           MULTIARCH=no
           PUSH=no
           if [[ "${{ github.event_name }}" == "push" ]]; then
-            MULTIARCH=yes
+            # MULTIARCH=yes
             PUSH=yes
           elif [[ "${{ contains(github.event.pull_request.labels.*.name, 'test-arm-image') }}" == "true" ]]; then
             MULTIARCH=yes
