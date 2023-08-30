@@ -39,7 +39,7 @@ jobs:
           if [[ "${MULTIARCH}" = "yes" ]]; then
             IMAGE_PUSH=${PUSH} make multiarch-image
           else
-            IMAGE_PUSH=${PUSH} make image
+            make image image-push
           fi
         working-directory: argocd-image-updater
         env:
