@@ -39,6 +39,7 @@ import (
 // knownMediaTypes is the list of media types we can process
 var knownMediaTypes = []string{
 	ocischema.SchemaVersion.MediaType,
+	ocischema.IndexSchemaVersion.MediaType,
 	schema1.MediaTypeSignedManifest, //nolint:staticcheck
 	schema2.SchemaVersion.MediaType,
 	manifestlist.SchemaVersion.MediaType,
